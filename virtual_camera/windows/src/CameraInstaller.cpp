@@ -1,6 +1,9 @@
 #include <digitalcam/virtual_camera/windows/CameraInstaller.h>
 
+#define NOMINMAX
+
 #include <windows.h>
+#include <objbase.h>
 #include <aclapi.h>
 #include <sddl.h>
 

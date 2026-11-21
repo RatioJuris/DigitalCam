@@ -1,5 +1,7 @@
 #include <digitalcam/virtual_camera/windows/WindowsVirtualCameraAdapter.h>
 
+#define NOMINMAX
+
 #include <windows.h>
 #include <mfapi.h>
 #include <mfvirtualcamera.h>
@@ -25,7 +27,7 @@ std::string hresultMessage(HRESULT value) {
 std::string registrationPath() {
     wchar_t clsid[64]{};
     StringFromGUID2(virtualCameraClsid(), clsid, static_cast<int>(std::size(clsid)));
-    return narrow(L"SOFTWARE\\Classes\\CLSID\\" + std::wstring(clsid));
+    return narrow(L"SOFTWARE\\Classes\\CLSID\\" + std::wstring(clsid) + L"\\InprocServer32");
 }
 
 }

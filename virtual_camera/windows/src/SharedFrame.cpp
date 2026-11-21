@@ -1,3 +1,5 @@
+#define NOMINMAX
+
 #include <digitalcam/virtual_camera/windows/SharedFrame.h>
 
 #include <windows.h>
@@ -430,7 +432,12 @@ bool SharedFrameReader::copyTo(
     const std::uint64_t published = static_cast<std::uint64_t>(InterlockedCompareExchange64(
         asLong64(const_cast<std::uint64_t*>(&header->published)), 0, 0
     ));
-    const std::uint32_t slot = static_cast<std::uint32_t>(published % kSlotCount);
+    if (published == 0) {
+        fillBlack(destination, destinationStride, destinationSize, current.width, current.height);
+        return false;
+    }
+
+    const std::uint32_t slot = static_cast<std::uint32_t>((published - 1) % kSlotCount);
     auto* sequence = asLong64(const_cast<std::uint64_t*>(&header->sequences[slot]));
 
     const std::size_t rowBytes = static_cast<std::size_t>(current.width) * 4;

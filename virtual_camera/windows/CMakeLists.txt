@@ -21,9 +21,15 @@ target_link_libraries(digitalcam_camera_windows
     WIL::WIL
     mfplat.lib
     mf.lib
+    mfsensorgroup.lib
     mfuuid.lib
     ole32.lib
     advapi32.lib
+)
+
+target_compile_definitions(digitalcam_camera_windows
+  PUBLIC
+    NOMINMAX
 )
 
 add_library(digitalcam::camera_windows ALIAS digitalcam_camera_windows)
@@ -44,9 +50,15 @@ target_link_libraries(digitalcam_virtual_camera
     WIL::WIL
     mfplat.lib
     mf.lib
+    mfsensorgroup.lib
     mfuuid.lib
     ole32.lib
     advapi32.lib
+)
+
+target_compile_definitions(digitalcam_virtual_camera
+  PRIVATE
+    NOMINMAX
 )
 
 set_target_properties(digitalcam_virtual_camera PROPERTIES

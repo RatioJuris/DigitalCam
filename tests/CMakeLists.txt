@@ -25,6 +25,10 @@ if(WIN32 AND DIGITALCAM_BUILD_PLATFORM_ADAPTERS)
     PRIVATE
       ${CMAKE_SOURCE_DIR}/virtual_camera/windows/include
   )
+  target_link_libraries(digitalcam_unit_tests
+    PRIVATE
+      digitalcam::camera_windows
+  )
 endif()
 
 include(GoogleTest)
