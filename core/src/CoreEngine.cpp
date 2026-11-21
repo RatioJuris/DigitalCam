@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <digitalcam/core/media/MediaLoader.h>
+
 #include <digitalcam/logging/Logger.h>
 
 namespace digitalcam::core {

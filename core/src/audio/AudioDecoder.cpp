@@ -153,9 +153,6 @@ public:
             return Result::failure("Audio reset failed: " + ffmpeg::errorText(result));
         }
         avcodec_flush_buffers(codecContext_);
-        if (swrContext_ != nullptr) {
-            swr_reset(swrContext_);
-        }
         return Result::success();
     }
 

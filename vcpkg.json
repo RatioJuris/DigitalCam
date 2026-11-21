@@ -3,7 +3,7 @@
   "version-string": "0.1.0",
   "description": "Software-based virtual camera for local image and video media",
   "dependencies": [
-    "qt6-base",
+    "qtbase",
     "ffmpeg",
     "spdlog",
     "gtest"

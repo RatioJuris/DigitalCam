@@ -18,7 +18,7 @@ The CI configuration uses dynamic FFmpeg libraries. Static FFmpeg builds also re
 On Windows, vcpkg is the simplest way to supply dependencies.
 
 ```powershell
-vcpkg install qt6-base:x64-windows ffmpeg:x64-windows spdlog:x64-windows gtest:x64-windows
+vcpkg install qtbase:x64-windows ffmpeg:x64-windows spdlog:x64-windows gtest:x64-windows
 ```
 
 ## Configure
