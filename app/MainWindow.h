@@ -47,6 +47,8 @@ public:
     explicit MainWindow(std::shared_ptr<digitalcam::core::CoreEngine> engine, QWidget* parent = nullptr);
     ~MainWindow() override;
 
+    void reportError(const std::string& message);
+
 private slots:
     void chooseMedia();
     void startCamera();

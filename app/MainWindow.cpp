@@ -75,6 +75,10 @@ MainWindow::~MainWindow() {
     engine_->setFrameCallback({});
 }
 
+void MainWindow::reportError(const std::string& message) {
+    showError(QString::fromStdString(message));
+}
+
 void MainWindow::buildUi() {
     setWindowTitle(QStringLiteral("DigitalCam Studio"));
     resize(1180, 760);

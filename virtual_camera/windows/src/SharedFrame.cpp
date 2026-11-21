@@ -313,9 +313,13 @@ SharedFrameReader::~SharedFrameReader() {
 
 bool SharedFrameReader::open() {
     close();
+    if (!ensureSharedFrameStorage()) {
+        return false;
+    }
+
     HANDLE file = CreateFileW(
         kFrameFilePath,
-        GENERIC_READ,
+        GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE,
         nullptr,
         OPEN_EXISTING,
@@ -329,7 +333,7 @@ bool SharedFrameReader::open() {
     HANDLE mapping = CreateFileMappingW(
         file,
         nullptr,
-        PAGE_READONLY,
+        PAGE_READWRITE,
         0,
         0,
         nullptr
@@ -341,7 +345,7 @@ bool SharedFrameReader::open() {
 
     void* view = MapViewOfFile(
         mapping,
-        FILE_MAP_READ,
+        FILE_MAP_READ | FILE_MAP_WRITE,
         0,
         0,
         sharedFrameFileSize()

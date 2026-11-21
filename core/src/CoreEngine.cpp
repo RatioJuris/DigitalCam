@@ -38,12 +38,16 @@ Result CoreEngine::startCamera(const VideoOutputFormat& format) {
         return Result::failure("Invalid camera output format");
     }
 
+    DCAM_LOG_INFO("Starting camera adapter: " + cameraAdapter_->name());
     const Result installResult = cameraAdapter_->install();
     if (!installResult) {
+        DCAM_LOG_ERROR("Camera adapter install failed: " + installResult.message);
         return installResult;
     }
+    DCAM_LOG_INFO("Camera adapter install check passed");
     const Result startResult = cameraAdapter_->start(format);
     if (!startResult) {
+        DCAM_LOG_ERROR("Camera adapter start failed: " + startResult.message);
         return startResult;
     }
 
@@ -117,10 +121,12 @@ void CoreEngine::stopAudio() {
 }
 
 Result CoreEngine::loadMedia(const std::filesystem::path& path, bool autoPlay) {
+    DCAM_LOG_INFO("Loading media: " + path.string());
     MediaLoader loader;
     MediaMetadata metadata;
     Result result = loader.probe(path, metadata);
     if (!result) {
+        DCAM_LOG_ERROR("Media probe failed: " + result.message);
         return result;
     }
 

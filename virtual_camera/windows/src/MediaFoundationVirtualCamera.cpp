@@ -300,6 +300,7 @@ public:
     }
 
     HRESULT setAllocator(IUnknown* allocator) {
+        std::lock_guard<std::recursive_mutex> lock(lock_);
         if (!allocator) {
             return E_POINTER;
         }
@@ -308,6 +309,7 @@ public:
     }
 
     HRESULT setD3DManager(IUnknown* manager) {
+        std::lock_guard<std::recursive_mutex> lock(lock_);
         if (!manager) {
             return E_POINTER;
         }
@@ -757,6 +759,7 @@ public:
     }
 
     STDMETHODIMP SetD3DManager(IUnknown* manager) override {
+        std::lock_guard<std::recursive_mutex> lock(lock_);
         if (!manager) {
             return E_POINTER;
         }
@@ -768,6 +771,7 @@ public:
     }
 
     STDMETHODIMP SetDefaultAllocator(DWORD streamId, IUnknown* allocator) override {
+        std::lock_guard<std::recursive_mutex> lock(lock_);
         if (streamId != 0) {
             return E_INVALIDARG;
         }
@@ -779,6 +783,7 @@ public:
         DWORD* inputStreamId,
         MFSampleAllocatorUsage* usage
     ) override {
+        std::lock_guard<std::recursive_mutex> lock(lock_);
         if (!inputStreamId || !usage || streamId != 0) {
             return E_INVALIDARG;
         }

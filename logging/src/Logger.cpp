@@ -84,6 +84,7 @@ void Logger::initialize(const std::string& directory) {
         std::vector<spdlog::sink_ptr> sinks{fileSink, consoleSink};
         auto logger = std::make_shared<spdlog::logger>("digitalcam", sinks.begin(), sinks.end());
         logger->set_level(spdlog::level::trace);
+        logger->flush_on(spdlog::level::trace);
         spdlog::register_logger(logger);
     }
 #else
@@ -133,7 +134,7 @@ void Logger::log(Level level, std::string_view message) {
     if (stream) {
         stream << timestampText() << " [" << levelText(level) << "] " << message << '\n';
     }
-    std::cout << '[' << levelText(level) << "] " << message << '\n';
+    std::cout << '[' << levelText(level) << "] " << message << '\n' << std::flush;
 }
 
 void Logger::trace(std::string_view message) { log(Level::Trace, message); }

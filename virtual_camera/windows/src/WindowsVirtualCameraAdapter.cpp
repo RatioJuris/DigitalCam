@@ -1,12 +1,15 @@
 #include <digitalcam/virtual_camera/windows/WindowsVirtualCameraAdapter.h>
 
 #include <windows.h>
+#include <objbase.h>
 #include <mfapi.h>
 #include <mfvirtualcamera.h>
 
 #include <cstdio>
 #include <iterator>
 #include <vector>
+
+#include <digitalcam/logging/Logger.h>
 
 namespace digitalcam::virtual_camera::windows {
 
@@ -108,23 +111,51 @@ core::Result WindowsVirtualCameraAdapter::start(const core::VideoOutputFormat& f
     if (!format.size.valid() || format.frameRate <= 0.0 ||
         static_cast<std::uint32_t>(format.size.width) > kMaxFrameWidth ||
         static_cast<std::uint32_t>(format.size.height) > kMaxFrameHeight) {
+        DCAM_LOG_ERROR("Unsupported virtual camera output format");
         return core::Result::failure("Unsupported virtual camera output format");
     }
 
+    const std::string dimensions = std::to_string(format.size.width) + "x" +
+        std::to_string(format.size.height) + " @" +
+        std::to_string(format.frameRate) + " fps";
+    DCAM_LOG_INFO("Windows virtual camera start requested: " + dimensions);
+
+    const HRESULT comResult = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (SUCCEEDED(comResult)) {
+        comInitialized_ = true;
+        DCAM_LOG_INFO("COM apartment initialized for virtual camera");
+    } else if (comResult == RPC_E_CHANGED_MODE) {
+        DCAM_LOG_INFO("COM apartment already initialized on this thread");
+    } else {
+        DCAM_LOG_WARNING("COM apartment initialization failed: " + hresultMessage(comResult));
+    }
+
+    DCAM_LOG_INFO("Starting Media Foundation");
     HRESULT hr = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
     if (FAILED(hr)) {
+        DCAM_LOG_ERROR("Media Foundation startup failed: " + hresultMessage(hr));
+        stopLocked();
         return core::Result::failure("Media Foundation startup failed: " + hresultMessage(hr));
     }
     mfStarted_ = true;
+    DCAM_LOG_INFO("Media Foundation started");
 
-    if (!writer_.open() || !writer_.configure(
+    DCAM_LOG_INFO("Opening the DigitalCam frame bridge");
+    if (!writer_.open()) {
+        DCAM_LOG_ERROR("Cannot open the DigitalCam frame bridge");
+        stopLocked();
+        return core::Result::failure("Cannot open the DigitalCam frame bridge");
+    }
+    if (!writer_.configure(
             static_cast<std::uint32_t>(format.size.width),
             static_cast<std::uint32_t>(format.size.height),
             format.frameRate
         )) {
+        DCAM_LOG_ERROR("Cannot configure the DigitalCam frame bridge: " + dimensions);
         stopLocked();
-        return core::Result::failure("Cannot open the DigitalCam frame bridge");
+        return core::Result::failure("Cannot configure the DigitalCam frame bridge");
     }
+    DCAM_LOG_INFO("Frame bridge configured: " + dimensions);
 
     const std::size_t frameBytes = static_cast<std::size_t>(format.size.width) *
         static_cast<std::size_t>(format.size.height) * 4;
@@ -138,13 +169,16 @@ core::Result WindowsVirtualCameraAdapter::start(const core::VideoOutputFormat& f
             static_cast<std::size_t>(format.size.width) * 4,
             initialFrame.data()
         )) {
+        DCAM_LOG_ERROR("Cannot publish the initial virtual camera frame");
         stopLocked();
         return core::Result::failure("Cannot publish the initial virtual camera frame");
     }
+    DCAM_LOG_INFO("Initial virtual camera frame published");
 
     wchar_t clsid[64]{};
     StringFromGUID2(virtualCameraClsid(), clsid, static_cast<int>(std::size(clsid)));
     const std::wstring friendlyName(virtualCameraName());
+    DCAM_LOG_INFO("Creating Media Foundation virtual camera");
     hr = MFCreateVirtualCamera(
         MFVirtualCameraType_SoftwareCameraSource,
         MFVirtualCameraLifetime_Session,
@@ -156,17 +190,22 @@ core::Result WindowsVirtualCameraAdapter::start(const core::VideoOutputFormat& f
         camera_.put()
     );
     if (FAILED(hr)) {
+        DCAM_LOG_ERROR("Cannot create the virtual camera: " + hresultMessage(hr));
         stopLocked();
         return core::Result::failure("Cannot create the virtual camera: " + hresultMessage(hr));
     }
+    DCAM_LOG_INFO("Media Foundation virtual camera created");
 
+    DCAM_LOG_INFO("Starting Media Foundation virtual camera");
     hr = camera_->Start(nullptr);
     if (FAILED(hr)) {
+        DCAM_LOG_ERROR("Cannot start the virtual camera: " + hresultMessage(hr));
         stopLocked();
         return core::Result::failure("Cannot start the virtual camera: " + hresultMessage(hr));
     }
 
     available_ = true;
+    DCAM_LOG_INFO("Virtual camera is available");
     return core::Result::success();
 }
 
@@ -199,6 +238,7 @@ bool WindowsVirtualCameraAdapter::isAvailable() const {
 void WindowsVirtualCameraAdapter::stopLocked() {
     available_ = false;
     if (camera_) {
+        DCAM_LOG_INFO("Removing Media Foundation virtual camera");
         camera_->Remove();
         camera_.reset();
     }
@@ -206,6 +246,11 @@ void WindowsVirtualCameraAdapter::stopLocked() {
     if (mfStarted_) {
         MFShutdown();
         mfStarted_ = false;
+        DCAM_LOG_INFO("Media Foundation stopped");
+    }
+    if (comInitialized_) {
+        CoUninitialize();
+        comInitialized_ = false;
     }
 }
 

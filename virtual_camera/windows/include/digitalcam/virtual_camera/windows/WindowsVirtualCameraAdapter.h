@@ -30,6 +30,7 @@ private:
     SharedFrameWriter writer_;
     wil::com_ptr_nothrow<IMFVirtualCamera> camera_;
     bool mfStarted_ = false;
+    bool comInitialized_ = false;
     bool available_ = false;
 
     void stopLocked();
