@@ -1,6 +1,6 @@
 # Phase 1 implementation scope
 
-Phase 1 creates the shared foundation only. It does not install a system-level virtual camera or microphone.
+Phase 1 created the shared foundation only. The Windows virtual camera is implemented separately and documented in `VIRTUAL_CAMERA.md`.
 
 ## Included
 
@@ -23,11 +23,9 @@ Phase 1 creates the shared foundation only. It does not install a system-level v
 
 ## Deferred
 
-- Windows Media Foundation virtual camera.
 - Windows virtual audio driver.
 - Linux v4l2loopback and PipeWire adapters.
 - macOS Camera Extension and Core Audio adapters.
-- Installer/uninstaller.
 - Playlist management.
 - Multiple simultaneous virtual devices.
 - Hardware-accelerated decoding.

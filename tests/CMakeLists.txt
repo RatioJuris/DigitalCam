@@ -16,5 +16,16 @@ target_link_libraries(digitalcam_unit_tests
     digitalcam::core
 )
 
+if(WIN32 AND DIGITALCAM_BUILD_PLATFORM_ADAPTERS)
+  target_sources(digitalcam_unit_tests
+    PRIVATE
+      unit/test_shared_frame.cpp
+  )
+  target_include_directories(digitalcam_unit_tests
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/virtual_camera/windows/include
+  )
+endif()
+
 include(GoogleTest)
 gtest_discover_tests(digitalcam_unit_tests)

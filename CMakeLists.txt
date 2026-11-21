@@ -18,7 +18,12 @@ set(CMAKE_AUTOUIC ON)
 
 option(DIGITALCAM_BUILD_APP "Build the DigitalCam Studio Qt application" ON)
 option(DIGITALCAM_BUILD_TESTS "Build DigitalCam unit tests" ON)
-option(DIGITALCAM_BUILD_PLATFORM_ADAPTERS "Build native OS camera/audio adapters" OFF)
+
+if(WIN32)
+  option(DIGITALCAM_BUILD_PLATFORM_ADAPTERS "Build native OS camera/audio adapters" ON)
+else()
+  option(DIGITALCAM_BUILD_PLATFORM_ADAPTERS "Build native OS camera/audio adapters" OFF)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 

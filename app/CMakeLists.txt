@@ -20,6 +20,17 @@ target_link_libraries(DigitalCamStudio
     digitalcam::logging
 )
 
+if(WIN32 AND DIGITALCAM_BUILD_PLATFORM_ADAPTERS)
+  target_link_libraries(DigitalCamStudio
+    PRIVATE
+      digitalcam::camera_windows
+  )
+  target_compile_definitions(DigitalCamStudio
+    PRIVATE
+      DIGITALCAM_WINDOWS_CAMERA=1
+  )
+endif()
+
 set_target_properties(DigitalCamStudio
   PROPERTIES
     OUTPUT_NAME DigitalCamStudio

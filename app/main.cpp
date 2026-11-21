@@ -7,6 +7,10 @@
 #include <digitalcam/virtual_audio/NullAudioAdapter.h>
 #include <digitalcam/virtual_camera/NullCameraAdapter.h>
 
+#ifdef DIGITALCAM_WINDOWS_CAMERA
+#include <digitalcam/virtual_camera/windows/WindowsVirtualCameraAdapter.h>
+#endif
+
 #include "MainWindow.h"
 
 int main(int argc, char* argv[]) {
@@ -16,7 +20,12 @@ int main(int argc, char* argv[]) {
 
     digitalcam::logging::Logger::instance().initialize();
 
+#ifdef DIGITALCAM_WINDOWS_CAMERA
+    auto camera = std::make_shared<
+        digitalcam::virtual_camera::windows::WindowsVirtualCameraAdapter>();
+#else
     auto camera = std::make_shared<digitalcam::virtual_camera::NullCameraAdapter>();
+#endif
     auto audio = std::make_shared<digitalcam::virtual_audio::NullAudioAdapter>();
     auto engine = std::make_shared<digitalcam::core::CoreEngine>(camera, audio);
 

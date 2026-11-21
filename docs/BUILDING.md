@@ -11,6 +11,7 @@ Pushes and pull requests to `main` run the Windows x64 and Ubuntu x64 build and 
 - Qt 6: Core, Gui, Widgets.
 - FFmpeg development libraries: avformat, avcodec, avutil, swscale, swresample.
 - GoogleTest for unit tests.
+- WIL on Windows when native platform adapters are enabled.
 - spdlog is optional. The logger falls back to standard output when unavailable.
 
 The CI configuration uses dynamic FFmpeg libraries. Static FFmpeg builds also require their transitive system libraries to be available to the linker.
@@ -18,7 +19,7 @@ The CI configuration uses dynamic FFmpeg libraries. Static FFmpeg builds also re
 On Windows, vcpkg is the simplest way to supply dependencies.
 
 ```powershell
-vcpkg install qtbase:x64-windows ffmpeg:x64-windows spdlog:x64-windows gtest:x64-windows
+vcpkg install qtbase:x64-windows ffmpeg:x64-windows spdlog:x64-windows gtest:x64-windows wil:x64-windows
 ```
 
 ## Configure
@@ -52,3 +53,8 @@ ctest --test-dir build -C Release --output-on-failure
 ```
 
 The exact executable path depends on the CMake generator and Qt configuration.
+
+On Windows, the build also produces `DigitalCamVirtualCamera.dll` and
+`DigitalCamCameraInstaller.exe`. Native platform adapters are enabled by
+default on Windows and disabled elsewhere. See `VIRTUAL_CAMERA.md` for
+installation and usage.

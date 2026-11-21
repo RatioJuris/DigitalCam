@@ -6,6 +6,7 @@
     "qtbase",
     "ffmpeg",
     "spdlog",
-    "gtest"
+    "gtest",
+    { "name": "wil", "platform": "windows" }
   ]
 }

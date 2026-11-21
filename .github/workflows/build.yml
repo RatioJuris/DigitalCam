@@ -42,6 +42,7 @@ jobs:
           cmake -S . -B build `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -DDIGITALCAM_BUILD_PLATFORM_ADAPTERS=ON `
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
@@ -64,6 +65,9 @@ jobs:
             $pluginRoot = Split-Path $qwindows.DirectoryName -Parent
             Copy-Item -Path (Join-Path $pluginRoot '*') -Destination $output -Recurse -Force
           }
+          $virtualCameraBin = "build/virtual_camera/windows/Release"
+          Copy-Item -Path "$virtualCameraBin/DigitalCamVirtualCamera.dll" -Destination $output -Force
+          Copy-Item -Path "$virtualCameraBin/DigitalCamCameraInstaller.exe" -Destination $output -Force
           Compress-Archive -Path "$output\*" -DestinationPath "DigitalCamStudio-0.1.0-windows-x64.zip" -Force
 
       - name: Upload Studio artifact
