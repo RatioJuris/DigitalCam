@@ -54,13 +54,15 @@ jobs:
         shell: pwsh
         run: |
           $output = "build/app/Release"
-          $runtime = "build/vcpkg_installed/x64-windows/bin"
-          $plugins = "build/vcpkg_installed/x64-windows/plugins"
+          $root = "build/vcpkg_installed/x64-windows"
+          $runtime = Join-Path $root "bin"
           if (Test-Path $runtime) {
             Copy-Item -Path "$runtime\*.dll" -Destination $output -Force
           }
-          if (Test-Path $plugins) {
-            Copy-Item -Path "$plugins\*" -Destination $output -Recurse -Force
+          $qwindows = Get-ChildItem -Path $root -Recurse -Filter qwindows.dll -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($qwindows) {
+            $pluginRoot = Split-Path $qwindows.DirectoryName -Parent
+            Copy-Item -Path (Join-Path $pluginRoot '*') -Destination $output -Recurse -Force
           }
           Compress-Archive -Path "$output\*" -DestinationPath "DigitalCamStudio-0.1.0-windows-x64.zip" -Force
 
