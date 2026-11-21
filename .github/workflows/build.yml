@@ -50,12 +50,24 @@ jobs:
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
 
+      - name: Bundle runtime dependencies
+        shell: pwsh
+        run: |
+          $runtime = "$env:VCPKG_ROOT\installed\x64-windows\bin"
+          $plugins = "$env:VCPKG_ROOT\installed\x64-windows\plugins"
+          $output = "build/app/Release"
+          Copy-Item -Path "$runtime\*.dll" -Destination $output -Force
+          if (Test-Path $plugins) {
+            Copy-Item -Path "$plugins\*" -Destination $output -Recurse -Force
+          }
+          Compress-Archive -Path "$output\*" -DestinationPath "DigitalCamStudio-0.1.0-windows-x64.zip" -Force
+
       - name: Upload Studio artifact
         uses: actions/upload-artifact@v4
         with:
           name: DigitalCamStudio-Windows-x64
-          path: build/app/Release/DigitalCamStudio.exe
-          if-no-files-found: warn
+          path: DigitalCamStudio-0.1.0-windows-x64.zip
+          if-no-files-found: error
 
   ubuntu:
     name: Ubuntu 24.04 x64
