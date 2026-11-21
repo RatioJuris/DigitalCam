@@ -4,7 +4,10 @@
   "description": "Software-based virtual camera for local image and video media",
   "dependencies": [
     "qtbase",
-    "ffmpeg",
+    {
+      "name": "ffmpeg",
+      "features": ["zlib"]
+    },
     "spdlog",
     "gtest",
     { "name": "wil", "platform": "windows" }
