@@ -1,7 +1,5 @@
 #include <digitalcam/virtual_camera/windows/WindowsVirtualCameraAdapter.h>
 
-#define NOMINMAX
-
 #include <windows.h>
 #include <mfapi.h>
 #include <mfvirtualcamera.h>
@@ -15,7 +13,31 @@ namespace digitalcam::virtual_camera::windows {
 namespace {
 
 std::string narrow(const std::wstring& value) {
-    return std::string(value.begin(), value.end());
+    const int bytes = WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        value.data(),
+        static_cast<int>(value.size()),
+        nullptr,
+        0,
+        nullptr,
+        nullptr
+    );
+    if (bytes <= 0) {
+        return {};
+    }
+    std::string result(static_cast<std::size_t>(bytes), '\0');
+    WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        value.data(),
+        static_cast<int>(value.size()),
+        result.data(),
+        bytes,
+        nullptr,
+        nullptr
+    );
+    return result;
 }
 
 std::string hresultMessage(HRESULT value) {

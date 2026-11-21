@@ -1,7 +1,5 @@
 #include <digitalcam/virtual_camera/windows/CameraInstaller.h>
 
-#define NOMINMAX
-
 #include <windows.h>
 #include <objbase.h>
 #include <aclapi.h>
@@ -19,6 +17,34 @@ namespace {
 
 constexpr wchar_t kSecurityDescriptor[] =
     L"D:P(A;;GA;;;SY)(A;;GA;;;LS)(A;;GA;;;NS)(A;;GA;;;BA)(A;;GA;;;BU)(A;;GA;;;WD)";
+
+std::string narrow(const std::wstring& value) {
+    const int bytes = WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        value.data(),
+        static_cast<int>(value.size()),
+        nullptr,
+        0,
+        nullptr,
+        nullptr
+    );
+    if (bytes <= 0) {
+        return {};
+    }
+    std::string result(static_cast<std::size_t>(bytes), '\0');
+    WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        value.data(),
+        static_cast<int>(value.size()),
+        result.data(),
+        bytes,
+        nullptr,
+        nullptr
+    );
+    return result;
+}
 
 std::string lastError() {
     const DWORD code = GetLastError();
@@ -42,7 +68,7 @@ std::string lastError() {
     while (!wide.empty() && (wide.back() == L'\r' || wide.back() == L'\n')) {
         wide.pop_back();
     }
-    return std::string(wide.begin(), wide.end());
+    return narrow(wide);
 }
 
 std::string hresultMessage(HRESULT value) {
@@ -180,7 +206,7 @@ core::Result installCamera() {
     if (!module) {
         return core::Result::failure("Cannot load the virtual camera DLL: " + lastError());
     }
-    using RegisterFunction = HRESULT (*)();
+    using RegisterFunction = HRESULT (STDAPICALLTYPE *)();
     auto registerFunction = reinterpret_cast<RegisterFunction>(
         GetProcAddress(module, "DllRegisterServer")
     );
@@ -201,7 +227,7 @@ core::Result uninstallCamera() {
     const std::wstring target = targetPath();
     HMODULE module = LoadLibraryW(target.c_str());
     if (module) {
-        using UnregisterFunction = HRESULT (*)();
+        using UnregisterFunction = HRESULT (STDAPICALLTYPE *)();
         auto unregisterFunction = reinterpret_cast<UnregisterFunction>(
             GetProcAddress(module, "DllUnregisterServer")
         );

@@ -1,5 +1,3 @@
-#define NOMINMAX
-
 #include <digitalcam/virtual_camera/windows/SharedFrame.h>
 
 #include <windows.h>

@@ -1,5 +1,4 @@
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 
 #include <initguid.h>
 #include <windows.h>
@@ -9,6 +8,7 @@
 #include <mfvirtualcamera.h>
 #include <mferror.h>
 #include <ks.h>
+#include <ksproxy.h>
 #include <ksmedia.h>
 #include <propvarutil.h>
 #include <wil/com.h>
@@ -189,20 +189,6 @@ public:
 private:
     wil::com_ptr_nothrow<IMFAttributes> attributes_;
 };
-
-template <class Interface>
-HRESULT handoff(Interface* value, REFIID riid, void** result) {
-    if (!result) {
-        return E_POINTER;
-    }
-    *result = nullptr;
-    if (IsEqualIID(riid, __uuidof(Interface))) {
-        *result = static_cast<void*>(value);
-        value->AddRef();
-        return S_OK;
-    }
-    return E_NOINTERFACE;
-}
 
 HRESULT queueTimeEvent(
     const wil::com_ptr_nothrow<IMFMediaEventQueue>& queue,
@@ -567,8 +553,6 @@ public:
             *result = static_cast<IUnknown*>(static_cast<IMFMediaSourceEx*>(this));
         } else if (IsEqualIID(riid, __uuidof(IMFMediaSource))) {
             *result = static_cast<IMFMediaSource*>(this);
-        } else if (IsEqualIID(riid, __uuidof(IMFMediaSource2))) {
-            *result = static_cast<IMFMediaSource2*>(this);
         } else if (IsEqualIID(riid, __uuidof(IMFMediaSourceEx))) {
             *result = static_cast<IMFMediaSourceEx*>(this);
         } else if (IsEqualIID(riid, __uuidof(IMFMediaEventGenerator))) {
@@ -758,7 +742,7 @@ public:
     }
 
     STDMETHODIMP GetSourceAttributes(IMFAttributes** result) override {
-        return handoff(attributes(), __uuidof(IMFAttributes), result);
+        return QueryInterface(IID_PPV_ARGS(result));
     }
 
     STDMETHODIMP GetStreamAttributes(DWORD streamId, IMFAttributes** result) override {
@@ -768,7 +752,8 @@ public:
         if (streamId != 0) {
             return E_INVALIDARG;
         }
-        return stream_->QueryInterface(__uuidof(IMFAttributes), result);
+        *result = nullptr;
+        return stream_->QueryInterface(__uuidof(IMFAttributes), reinterpret_cast<void**>(result));
     }
 
     STDMETHODIMP SetD3DManager(IUnknown* manager) override {
@@ -776,10 +761,6 @@ public:
             return E_POINTER;
         }
         return stream_->setD3DManager(manager);
-    }
-
-    STDMETHODIMP SetMediaType(DWORD, IMFMediaType*) override {
-        return S_OK;
     }
 
     STDMETHODIMP GetService(REFGUID, REFIID, LPVOID*) override {
