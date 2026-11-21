@@ -37,3 +37,4 @@ desktop.ini
 logs/
 *.log
 config/local.json
+AGENTS.md
