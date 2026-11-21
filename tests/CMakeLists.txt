@@ -8,6 +8,7 @@ add_executable(digitalcam_unit_tests
   unit/test_frame_processor.cpp
   unit/test_app_config.cpp
   unit/test_cli_options.cpp
+  unit/test_image_decoder.cpp
 )
 
 target_link_libraries(digitalcam_unit_tests

@@ -1,6 +1,7 @@
 #include <digitalcam/core/media/ImageDecoder.h>
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <filesystem>
 #include <utility>
@@ -61,6 +62,34 @@ void rotateBgra(VideoFrame& frame, int quarter) {
     }
 }
 
+
+const AVCodec* decoderForExtension(const std::filesystem::path& path) {
+    std::string extension = path.extension().string();
+    std::transform(
+        extension.begin(),
+        extension.end(),
+        extension.begin(),
+        [](unsigned char value) { return static_cast<char>(std::tolower(value)); }
+    );
+
+    if (extension == ".png") {
+        return avcodec_find_decoder(AV_CODEC_ID_PNG);
+    }
+    if (extension == ".jpg" || extension == ".jpeg") {
+        return avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+    }
+    if (extension == ".bmp") {
+        return avcodec_find_decoder(AV_CODEC_ID_BMP);
+    }
+    if (extension == ".webp") {
+        return avcodec_find_decoder(AV_CODEC_ID_WEBP);
+    }
+    if (extension == ".gif") {
+        return avcodec_find_decoder(AV_CODEC_ID_GIF);
+    }
+    return nullptr;
+}
+
 }
 
 class ImageDecoderImpl {
@@ -88,16 +117,40 @@ public:
             return Result::failure("Unable to read image metadata: " + ffmpeg::errorText(result));
         }
 
-        const AVCodec* codec = nullptr;
-        const int streamIndex = av_find_best_stream(
+        int streamIndex = av_find_best_stream(
             formatContext_,
             AVMEDIA_TYPE_VIDEO,
             -1,
             -1,
-            &codec,
+            nullptr,
             0
         );
+        const AVCodec* codec = streamIndex >= 0
+            ? avcodec_find_decoder(formatContext_->streams[streamIndex]->codecpar->codec_id)
+            : nullptr;
+
         if (streamIndex < 0 || codec == nullptr) {
+            streamIndex = -1;
+            for (unsigned int index = 0; index < formatContext_->nb_streams; ++index) {
+                if (formatContext_->streams[index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+                    streamIndex = static_cast<int>(index);
+                    break;
+                }
+            }
+        }
+        if (streamIndex < 0) {
+            close();
+            return Result::failure("No image stream found");
+        }
+        if (codec == nullptr) {
+            codec = avcodec_find_decoder(
+                formatContext_->streams[streamIndex]->codecpar->codec_id
+            );
+        }
+        if (codec == nullptr) {
+            codec = decoderForExtension(path);
+        }
+        if (codec == nullptr) {
             close();
             return Result::failure("No decodable image stream found");
         }

@@ -120,7 +120,7 @@ core::Result WindowsVirtualCameraAdapter::start(const core::VideoOutputFormat& f
         std::to_string(format.frameRate) + " fps";
     DCAM_LOG_INFO("Windows virtual camera start requested: " + dimensions);
 
-    const HRESULT comResult = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    const HRESULT comResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     if (SUCCEEDED(comResult)) {
         comInitialized_ = true;
         DCAM_LOG_INFO("COM apartment initialized for virtual camera");
@@ -195,6 +195,13 @@ core::Result WindowsVirtualCameraAdapter::start(const core::VideoOutputFormat& f
         return core::Result::failure("Cannot create the virtual camera: " + hresultMessage(hr));
     }
     DCAM_LOG_INFO("Media Foundation virtual camera created");
+
+    const HRESULT resetResult = camera_->Stop();
+    if (FAILED(resetResult)) {
+        DCAM_LOG_INFO("No existing virtual camera state to reset");
+    } else {
+        DCAM_LOG_INFO("Existing virtual camera state reset");
+    }
 
     DCAM_LOG_INFO("Starting Media Foundation virtual camera");
     hr = camera_->Start(nullptr);
