@@ -1,0 +1,16 @@
+* text=auto
+
+*.cpp text eol=crlf
+*.h text eol=crlf
+*.hpp text eol=crlf
+*.cmake text eol=crlf
+CMakeLists.txt text eol=crlf
+*.md text eol=lf
+*.json text eol=lf
+*.qrc text eol=lf
+*.ui text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
