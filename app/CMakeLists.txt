@@ -18,6 +18,10 @@ target_link_libraries(digitalcam_app_cli
 
 add_library(digitalcam::app_cli ALIAS digitalcam_app_cli)
 
+set_target_properties(digitalcam_app_cli PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
+
 qt_add_executable(DigitalCamStudio
   WIN32
   MACOSX_BUNDLE
