@@ -34,11 +34,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          & "$env:VCPKG_ROOT\vcpkg.exe" install `
-            qt6-base:x64-windows `
-            ffmpeg:x64-windows `
-            spdlog:x64-windows `
-            gtest:x64-windows
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
 
       - name: Configure
         run: |

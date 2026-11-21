@@ -46,7 +46,7 @@ void PlaybackScheduler::markPublished() {
 }
 
 void PlaybackScheduler::waitUntilNext() const {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     const auto deadline = lastPublish_ + intervalLocked();
     lock.unlock();
     std::this_thread::sleep_until(deadline);
